@@ -47,6 +47,7 @@ import {
 import { formatBodyweightClass, getCategoryRule } from "./domain/iwfCategories";
 import { futureSensorAdapters, makeId } from "./domain/sensorAdapters";
 import { exportDataSet, loadDataSet, resetDataSet, saveDataSet } from "./domain/storage";
+import { loadDataSetFromApi, persistDataSetToApi } from "./apiStorage";
 
 type DraftComponent = {
   id: string;
@@ -218,7 +219,19 @@ function App() {
 
   useEffect(() => {
     saveDataSet(dataSet);
+    persistDataSetToApi(dataSet);
   }, [dataSet]);
+
+  // Hydrate from the durable local API when configured (fail-silent; the
+  // localStorage copy above remains the standalone fallback).
+  useEffect(() => {
+    void loadDataSetFromApi().then((persisted) => {
+      if (persisted) {
+        setDataSet(persisted);
+        setActiveAthleteId((current) => current || (persisted.athletes[0]?.id ?? ""));
+      }
+    });
+  }, []);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
