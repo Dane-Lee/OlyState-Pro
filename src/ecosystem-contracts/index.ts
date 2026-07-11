@@ -7,6 +7,7 @@ export * from './identity';
 export * from './envelope';
 export * from './guards';
 export * from './flows';
+export * from './connections';
 export * from './payloads/session';
 export * from './payloads/derived';
 export * from './payloads/readiness';
