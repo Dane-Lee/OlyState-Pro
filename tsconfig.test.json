@@ -5,9 +5,13 @@
     "moduleResolution": "Node",
     "noEmit": false,
     "outDir": ".test-build",
-    "rootDir": "src",
+    "rootDir": ".",
     "types": ["node"],
     "isolatedModules": false
   },
-  "include": ["src/domain/**/*.ts"]
+  "include": [
+    "src/domain/**/*.ts",
+    "server/connectionSettings.ts",
+    "server/connectionSettings.test.ts"
+  ]
 }

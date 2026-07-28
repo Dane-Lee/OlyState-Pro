@@ -15,6 +15,14 @@
 import { createServer } from "node:http";
 import { OlyStateDatabase } from "./db";
 import {
+  connectionSettingsPath,
+  loadConnectionSettings,
+  outboundState,
+  reportToHub,
+  shouldEnqueue,
+  shouldTransmit,
+} from "./connectionSettings";
+import {
   collectPublishableObservations,
 } from "../src/domain/ecosystemEnvelope";
 import type { OlyStateDataSet } from "../src/domain/types";
@@ -24,6 +32,7 @@ import { SYNC_SCHEMA_VERSION } from "../src/ecosystem-contracts/envelope";
 const port = Number(process.env.OLYSTATE_API_PORT ?? 8788);
 const dbPath = process.env.OLYSTATE_DB_PATH ?? "./data/olystate.sqlite";
 const db = new OlyStateDatabase(dbPath);
+const settingsPath = connectionSettingsPath(dbPath);
 
 const PAYLOAD_SCHEMA_VERSION = "1.0.0";
 const MAX_ATTEMPTS = 10;
@@ -81,9 +90,14 @@ async function drainOutbox(): Promise<void> {
   const rows = db.pending(DRAIN_BATCH, MAX_ATTEMPTS);
   if (rows.length === 0) return;
 
+  const settings = loadConnectionSettings(settingsPath);
   const envelopes: Record<string, unknown>[] = [];
   const envelopeRows: typeof rows = [];
   for (const row of rows) {
+    // Connection switchboard: 'off'/'pause' keep this row queued untouched —
+    // not marked sent/failed, just skipped for this drain pass.
+    if (!shouldTransmit(outboundState(settings, row.payloadType as SyncPayloadType))) continue;
+
     const sharedAthleteId = await resolveSharedAthleteId(row.athleteId);
     if (!sharedAthleteId) continue;
     envelopes.push({
@@ -135,6 +149,11 @@ async function drainOutbox(): Promise<void> {
 }
 
 function enqueueObservations(dataSet: OlyStateDataSet): number {
+  // Connection switchboard: 'off' stops queuing too; 'pause' still queues
+  // (only transmission is gated later, in drainOutbox).
+  const state = outboundState(loadConnectionSettings(settingsPath), SyncPayloadType.ObservationUpsert);
+  if (!shouldEnqueue(state)) return 0;
+
   let queued = 0;
   for (const { athleteId, draft } of collectPublishableObservations(dataSet)) {
     // The observation's own id is the idempotency key: re-saving the dataset
@@ -201,6 +220,9 @@ server.listen(port, () => {
   if (isHubConfigured()) {
     setInterval(() => void drainOutbox(), 5 * 60 * 1000);
   }
+  // Mirror current connection settings to the hub once at startup so the
+  // Control Center reflects this app's switchboard; fire-and-forget.
+  void reportToHub(loadConnectionSettings(settingsPath));
 });
 
 process.on("SIGINT", () => {
