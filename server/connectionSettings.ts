@@ -38,6 +38,26 @@ export function connectionSettingsPath(dbPath: string): string {
   return join(dirname(resolve(dbPath)), SETTINGS_FILE_NAME);
 }
 
+/** Prevents arbitrary websites from mutating an unauthenticated local API. */
+export function isTrustedControlOrigin(
+  origin: string | undefined,
+  allowedOrigin = process.env.OLYSTATE_ALLOWED_ORIGIN
+): boolean {
+  if (!origin) return true;
+  if (origin === allowedOrigin) return true;
+  try {
+    const hostname = new URL(origin).hostname;
+    return (
+      hostname === "localhost" ||
+      hostname === "127.0.0.1" ||
+      hostname === "::1" ||
+      hostname === "[::1]"
+    );
+  } catch {
+    return false;
+  }
+}
+
 /** Reads current settings; a missing file or malformed JSON reads as default-open. */
 export function loadConnectionSettings(settingsPath: string): ConnectionSettings {
   try {
@@ -105,4 +125,29 @@ export async function reportToHub(
     // Report is cosmetic (Control Center panel freshness); enforcement of
     // pause/off stays fully local regardless of whether the mirror lands.
   }
+}
+
+/** Reads the canonical live topology without exposing the service key to the browser. */
+export async function fetchHubStatus(
+  options: { hubUrl?: string; serviceKey?: string; fetchImpl?: typeof fetch } = {}
+): Promise<Record<string, unknown>> {
+  const hubUrl = (options.hubUrl ?? process.env.ATHLETEOS_HUB_URL)?.replace(/\/$/, "");
+  const serviceKey = options.serviceKey ?? process.env.ATHLETEOS_SERVICE_KEY;
+  if (!hubUrl || !serviceKey) {
+    throw new Error(
+      "AthleteOS hub is not configured. Set ATHLETEOS_HUB_URL and ATHLETEOS_SERVICE_KEY on the OlyState API."
+    );
+  }
+  const fetchImpl = options.fetchImpl ?? fetch;
+  const response = await fetchImpl(`${hubUrl}/api/ecosystem/status`, {
+    headers: { "x-service-key": serviceKey },
+  });
+  if (!response.ok) {
+    throw new Error(`AthleteOS status failed (${response.status}): ${await response.text()}`);
+  }
+  const result = await response.json();
+  if (typeof result !== "object" || result === null || Array.isArray(result)) {
+    throw new Error("AthleteOS status response is malformed.");
+  }
+  return result as Record<string, unknown>;
 }

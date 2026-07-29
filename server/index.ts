@@ -16,9 +16,12 @@ import { createServer } from "node:http";
 import { OlyStateDatabase } from "./db";
 import {
   connectionSettingsPath,
+  fetchHubStatus,
+  isTrustedControlOrigin,
   loadConnectionSettings,
   outboundState,
   reportToHub,
+  saveConnectionSettings,
   shouldEnqueue,
   shouldTransmit,
 } from "./connectionSettings";
@@ -28,6 +31,7 @@ import {
 import type { OlyStateDataSet } from "../src/domain/types";
 import { SourceApp, SyncPayloadType } from "../src/ecosystem-contracts/enums";
 import { SYNC_SCHEMA_VERSION } from "../src/ecosystem-contracts/envelope";
+import { parseConnectionSettings } from "../src/ecosystem-contracts/connections";
 
 const port = Number(process.env.OLYSTATE_API_PORT ?? 8788);
 const dbPath = process.env.OLYSTATE_DB_PATH ?? "./data/olystate.sqlite";
@@ -204,6 +208,38 @@ const server = createServer(async (req, res) => {
       if (queued > 0) void drainOutbox();
       emitSenti("session_imported", "operational");
       return send(200, { saved: true, observationsQueued: queued });
+    }
+    if (req.method === "GET" && req.url === "/ecosystem/status") {
+      const status = await fetchHubStatus();
+      const settings = loadConnectionSettings(settingsPath);
+      const reports = Array.isArray(status.connections) ? status.connections : [];
+      return send(200, {
+        ...status,
+        connections: [
+          ...reports.filter(
+            (report) =>
+              typeof report !== "object" ||
+              report === null ||
+              !("app" in report) ||
+              report.app !== "olyStatePro"
+          ),
+          { app: "olyStatePro", settings, reportedAt: settings.updatedAt },
+        ],
+      });
+    }
+    if (req.method === "GET" && req.url === "/ecosystem/connections") {
+      return send(200, loadConnectionSettings(settingsPath));
+    }
+    if (req.method === "PUT" && req.url === "/ecosystem/connections") {
+      if (!isTrustedControlOrigin(req.headers.origin)) {
+        return send(403, { error: "Connection settings may only be changed from the local OlyState app." });
+      }
+      const settings = saveConnectionSettings(
+        settingsPath,
+        parseConnectionSettings(JSON.parse(await readBody(req)))
+      );
+      await reportToHub(settings);
+      return send(200, settings);
     }
     return send(404, { error: `No route for ${req.method} ${req.url}` });
   } catch (error) {

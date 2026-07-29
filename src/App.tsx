@@ -48,6 +48,12 @@ import { formatBodyweightClass, getCategoryRule } from "./domain/iwfCategories";
 import { futureSensorAdapters, makeId } from "./domain/sensorAdapters";
 import { exportDataSet, loadDataSet, resetDataSet, saveDataSet } from "./domain/storage";
 import { loadDataSetFromApi, persistDataSetToApi } from "./apiStorage";
+import {
+  ControlCenter,
+  ControlCenterLauncher,
+  useControlCenterHotkey,
+} from "./ecosystem-control-center";
+import { useEcosystemControlCenter } from "./useEcosystemControlCenter";
 
 type DraftComponent = {
   id: string;
@@ -196,6 +202,9 @@ function App() {
   const [dataSet, setDataSet] = useState<OlyStateDataSet>(() => loadDataSet());
   const [activeAthleteId, setActiveAthleteId] = useState(() => dataSet.athletes[0]?.id ?? "");
   const [theme, setTheme] = useState<ThemeMode>(getInitialTheme);
+  const [controlCenterOpen, setControlCenterOpen] = useState(false);
+  const ecosystem = useEcosystemControlCenter();
+  useControlCenterHotkey(() => setControlCenterOpen((open) => !open));
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isDarkMode = theme === "dark";
 
@@ -293,6 +302,10 @@ function App() {
           <h1>Coach Readiness Console</h1>
         </div>
         <div className="topbar-actions">
+          <ControlCenterLauncher
+            status={ecosystem.status}
+            onClick={() => setControlCenterOpen(true)}
+          />
           <button
             className="icon-button theme-toggle"
             type="button"
@@ -318,6 +331,17 @@ function App() {
           <input ref={fileInputRef} className="hidden-input" type="file" accept="application/json" onChange={handleImport} />
         </div>
       </header>
+
+      <ControlCenter
+        hostApp="olyStatePro"
+        status={ecosystem.status}
+        loading={ecosystem.loading}
+        error={ecosystem.error}
+        open={controlCenterOpen}
+        onClose={() => setControlCenterOpen(false)}
+        onRefresh={ecosystem.refresh}
+        onConnectionChange={ecosystem.enabled ? ecosystem.setConnection : undefined}
+      />
 
       <section className="workspace-grid">
         <aside className="roster-panel" aria-label="Athlete roster">

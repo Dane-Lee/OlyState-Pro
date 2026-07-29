@@ -5,6 +5,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   connectionSettingsPath,
+  fetchHubStatus,
+  isTrustedControlOrigin,
   loadConnectionSettings,
   outboundState,
   reportToHub,
@@ -20,6 +22,27 @@ describe("connectionSettingsPath", () => {
   it("places the settings file next to the DB file, not in browser storage", () => {
     const path = connectionSettingsPath(join("data", "olystate.sqlite"));
     assert.equal(path.endsWith(join("data", "connection-settings.json")), true);
+  });
+});
+
+describe("isTrustedControlOrigin", () => {
+  it("allows non-browser callers and loopback browser origins", () => {
+    assert.equal(isTrustedControlOrigin(undefined), true);
+    assert.equal(isTrustedControlOrigin("http://localhost:5173"), true);
+    assert.equal(isTrustedControlOrigin("http://127.0.0.1:4173"), true);
+    assert.equal(isTrustedControlOrigin("http://[::1]:5173"), true);
+  });
+
+  it("allows an explicitly configured deployed origin", () => {
+    assert.equal(
+      isTrustedControlOrigin("https://olystate.example", "https://olystate.example"),
+      true
+    );
+  });
+
+  it("rejects unrelated and malformed browser origins", () => {
+    assert.equal(isTrustedControlOrigin("https://malicious.example"), false);
+    assert.equal(isTrustedControlOrigin("not a URL"), false);
   });
 });
 
@@ -134,6 +157,50 @@ describe("reportToHub", () => {
         serviceKey: "sk",
         fetchImpl: throwingFetch,
       })
+    );
+  });
+});
+
+describe("fetchHubStatus", () => {
+  it("rejects without making a request when the hub is not configured", async () => {
+    let called = false;
+    await assert.rejects(
+      fetchHubStatus({
+        hubUrl: "",
+        serviceKey: "",
+        fetchImpl: (async () => {
+          called = true;
+          return new Response("{}");
+        }) as unknown as typeof fetch,
+      }),
+      /AthleteOS hub is not configured/
+    );
+    assert.equal(called, false);
+  });
+
+  it("GETs canonical status with the server-side service key", async () => {
+    const calls: { url: string; init: RequestInit }[] = [];
+    const fakeFetch = (async (url: string | URL, init?: RequestInit) => {
+      calls.push({ url: String(url), init: init as RequestInit });
+      return new Response(JSON.stringify({ generatedAt: "2026-07-29T00:00:00.000Z", apps: [] }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }) as unknown as typeof fetch;
+
+    const result = await fetchHubStatus({
+      hubUrl: "http://hub.test/",
+      serviceKey: "sk-test",
+      fetchImpl: fakeFetch,
+    });
+
+    assert.deepEqual(result.apps, []);
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0].url, "http://hub.test/api/ecosystem/status");
+    assert.equal(calls[0].init.method, undefined);
+    assert.equal(
+      (calls[0].init.headers as Record<string, string>)["x-service-key"],
+      "sk-test"
     );
   });
 });

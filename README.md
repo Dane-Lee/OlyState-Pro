@@ -9,11 +9,25 @@ npm install
 npm run dev
 ```
 
+The browser remains fully standalone with localStorage. To enable durable SQLite
+persistence and the ecosystem Control Center, copy `.env.example` to `.env`, set
+the server-only AthleteOS credentials, then run the local API and web app in
+separate terminals:
+
+```bash
+npm run server:dev
+npm run dev
+```
+
+`VITE_OLYSTATE_API_URL` is only the local API URL. Keep
+`ATHLETEOS_SERVICE_KEY` server-side and never rename it with a `VITE_` prefix.
+Control Center writes are accepted from loopback origins by default. If the web
+app is hosted elsewhere, set `OLYSTATE_ALLOWED_ORIGIN` to that exact origin.
+
 ## Verify
 
 ```bash
-npm test
-npm run build
+npm run verify
 ```
 
 ## Model Notes

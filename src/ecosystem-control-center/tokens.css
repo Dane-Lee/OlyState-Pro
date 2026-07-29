@@ -1,0 +1,154 @@
+/* GENERATED from src/tokens.ts — do not edit by hand. */
+/* @ecosystem/design-tokens — dark glass is the signature (ratified 2026-07-11). */
+
+:root,
+[data-eco-theme='dark'] {
+  --eco-color-bg: #0B0E14;
+  --eco-color-surface1: #11151F;
+  --eco-color-surface2: #161B28;
+  --eco-color-glass: rgba(17, 21, 31, 0.62);
+  --eco-color-glass-border: rgba(255, 255, 255, 0.08);
+  --eco-color-border: rgba(255, 255, 255, 0.06);
+  --eco-color-text-primary: #E8ECF4;
+  --eco-color-text-secondary: #9AA3B5;
+  --eco-color-text-tertiary: #5C6577;
+  --eco-color-text-on-accent: #0B0E14;
+  --eco-color-accent: #5B8CFF;
+  --eco-color-accent-soft: rgba(91, 140, 255, 0.16);
+  --eco-color-status-healthy: #34D399;
+  --eco-color-status-healthy-soft: rgba(52, 211, 153, 0.16);
+  --eco-color-status-warn: #FBBF24;
+  --eco-color-status-warn-soft: rgba(251, 191, 36, 0.16);
+  --eco-color-status-error: #F87171;
+  --eco-color-status-error-soft: rgba(248, 113, 113, 0.16);
+  --eco-color-status-paused: #A78BFA;
+  --eco-color-status-paused-soft: rgba(167, 139, 250, 0.16);
+  --eco-color-flow: #22D3EE;
+  --eco-type-font-sans: 'Inter', 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --eco-type-font-mono: 'JetBrains Mono', 'Cascadia Code', 'Consolas', monospace;
+  --eco-type-size2xs: 11px;
+  --eco-type-size-xs: 12px;
+  --eco-type-size-sm: 13px;
+  --eco-type-size-md: 14px;
+  --eco-type-size-lg: 16px;
+  --eco-type-size-xl: 19px;
+  --eco-type-size2xl: 24px;
+  --eco-type-size3xl: 30px;
+  --eco-type-weight-regular: 450;
+  --eco-type-weight-medium: 550;
+  --eco-type-weight-semibold: 650;
+  --eco-type-leading-tight: 1.2;
+  --eco-type-leading-normal: 1.5;
+  --eco-type-tracking-wide: 0.08em;
+  --eco-space-s2: 2px;
+  --eco-space-s4: 4px;
+  --eco-space-s8: 8px;
+  --eco-space-s12: 12px;
+  --eco-space-s16: 16px;
+  --eco-space-s20: 20px;
+  --eco-space-s24: 24px;
+  --eco-space-s32: 32px;
+  --eco-space-s40: 40px;
+  --eco-space-s48: 48px;
+  --eco-space-s64: 64px;
+  --eco-radius-sm: 6px;
+  --eco-radius-md: 10px;
+  --eco-radius-lg: 14px;
+  --eco-radius-xl: 20px;
+  --eco-radius-full: 999px;
+  --eco-elevation-e1: 0 1px 2px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  --eco-elevation-e2: 0 8px 24px rgba(0, 0, 0, 0.42), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  --eco-elevation-e3: 0 24px 64px rgba(0, 0, 0, 0.55);
+  --eco-elevation-glow-accent: 0 0 20px rgba(91, 140, 255, 0.35);
+  --eco-elevation-glow-healthy: 0 0 16px rgba(52, 211, 153, 0.35);
+  --eco-elevation-glow-error: 0 0 16px rgba(248, 113, 113, 0.4);
+  --eco-blur-soft: 12px;
+  --eco-blur-glass: 24px;
+  --eco-motion-fast: 120ms;
+  --eco-motion-base: 200ms;
+  --eco-motion-slow: 320ms;
+  --eco-motion-grand: 560ms;
+  --eco-motion-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --eco-motion-ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --eco-motion-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --eco-motion-stagger-step: 40ms;
+  --eco-z-header: 100;
+  --eco-z-popover: 600;
+  --eco-z-overlay: 1000;
+}
+
+[data-eco-theme='light'] {
+  --eco-color-bg: #F5F7FB;
+  --eco-color-surface1: #FFFFFF;
+  --eco-color-surface2: #EEF1F8;
+  --eco-color-glass: rgba(255, 255, 255, 0.72);
+  --eco-color-glass-border: rgba(11, 14, 20, 0.08);
+  --eco-color-border: rgba(11, 14, 20, 0.08);
+  --eco-color-text-primary: #171C26;
+  --eco-color-text-secondary: #4A5468;
+  --eco-color-text-tertiary: #8B94A6;
+  --eco-color-text-on-accent: #FFFFFF;
+  --eco-color-accent: #3D6FE8;
+  --eco-color-accent-soft: rgba(61, 111, 232, 0.12);
+  --eco-color-status-healthy: #0FA976;
+  --eco-color-status-healthy-soft: rgba(15, 169, 118, 0.12);
+  --eco-color-status-warn: #C98A04;
+  --eco-color-status-warn-soft: rgba(201, 138, 4, 0.12);
+  --eco-color-status-error: #DC4C4C;
+  --eco-color-status-error-soft: rgba(220, 76, 76, 0.12);
+  --eco-color-status-paused: #7C5CD6;
+  --eco-color-status-paused-soft: rgba(124, 92, 214, 0.12);
+  --eco-color-flow: #0C9EBF;
+}
+
+/* --- Base utilities every program shares ---------------------------------- */
+
+.eco-glass {
+  background: var(--eco-color-glass);
+  border: 1px solid var(--eco-color-glass-border);
+  backdrop-filter: blur(var(--eco-blur-glass));
+  -webkit-backdrop-filter: blur(var(--eco-blur-glass));
+  border-radius: var(--eco-radius-xl);
+  box-shadow: var(--eco-elevation-e3);
+}
+
+.eco-surface {
+  background: var(--eco-color-surface1);
+  border: 1px solid var(--eco-color-border);
+  border-radius: var(--eco-radius-lg);
+  box-shadow: var(--eco-elevation-e1);
+}
+
+.eco-text {
+  color: var(--eco-color-text-primary);
+  font-family: var(--eco-type-font-sans);
+  font-size: var(--eco-type-size-md);
+  line-height: var(--eco-type-leading-normal);
+}
+
+.eco-mono {
+  font-family: var(--eco-type-font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.eco-focus-ring:focus-visible {
+  outline: 2px solid var(--eco-color-accent);
+  outline-offset: 2px;
+}
+
+/* Motion discipline: one transition vocabulary, and it disappears entirely
+   for users who ask for reduced motion. */
+.eco-transition {
+  transition-duration: var(--eco-motion-base);
+  transition-timing-function: var(--eco-motion-ease-standard);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --eco-motion-fast: 0ms;
+    --eco-motion-base: 0ms;
+    --eco-motion-slow: 0ms;
+    --eco-motion-grand: 0ms;
+    --eco-motion-stagger-step: 0ms;
+  }
+}
