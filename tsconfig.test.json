@@ -12,6 +12,8 @@
   "include": [
     "src/domain/**/*.ts",
     "server/connectionSettings.ts",
-    "server/connectionSettings.test.ts"
+    "server/connectionSettings.test.ts",
+    "server/db.ts",
+    "server/db.test.ts"
   ]
 }

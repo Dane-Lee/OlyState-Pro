@@ -176,12 +176,14 @@ const readBody = async (req: import("node:http").IncomingMessage): Promise<strin
 };
 
 const server = createServer(async (req, res) => {
-  const send = (status: number, payload: unknown) => {
+  const send = (status: number, payload: unknown, headers: Record<string, string> = {}) => {
     res.writeHead(status, {
       "Content-Type": "application/json",
       "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Headers": "content-type",
+      "Access-Control-Allow-Headers": "content-type, if-match",
+      "Access-Control-Expose-Headers": "x-dataset-revision",
       "Access-Control-Allow-Methods": "GET, PUT, OPTIONS",
+      ...headers,
     });
     res.end(JSON.stringify(payload));
   };
@@ -192,22 +194,43 @@ const server = createServer(async (req, res) => {
       return send(200, { status: "ok", service: "OlyStatePro", datasetSaved: Boolean(db.loadDataset()) });
     }
     if (req.method === "GET" && req.url === "/dataset") {
-      const payload = db.loadDataset();
-      if (!payload) return send(404, { error: "No dataset saved yet." });
-      res.writeHead(200, { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" });
-      return res.end(payload);
+      const snapshot = db.loadDataset();
+      if (!snapshot) return send(404, { error: "No dataset saved yet." });
+      return send(
+        200,
+        JSON.parse(snapshot.payloadJson),
+        { "x-dataset-revision": String(snapshot.revision) }
+      );
     }
     if (req.method === "PUT" && req.url === "/dataset") {
+      const revisionMatch = /^"?(\d+)"?$/.exec(String(req.headers["if-match"] ?? ""));
+      if (!revisionMatch) {
+        return send(428, { error: "If-Match dataset revision is required." });
+      }
       const raw = await readBody(req);
       const dataSet = JSON.parse(raw) as OlyStateDataSet;
       if (!Array.isArray(dataSet.athletes) || !Array.isArray(dataSet.sessions)) {
         return send(400, { error: "Body must be an OlyStateDataSet." });
       }
-      db.saveDataset(raw);
+      const saved = db.saveDataset(raw, Number(revisionMatch[1]));
+      if (!saved.saved) {
+        return send(
+          409,
+          {
+            error: "Dataset revision conflict. Rehydrate before retrying.",
+            current: saved.payloadJson ? JSON.parse(saved.payloadJson) : undefined,
+          },
+          { "x-dataset-revision": String(saved.revision) }
+        );
+      }
       const queued = enqueueObservations(dataSet);
       if (queued > 0) void drainOutbox();
       emitSenti("session_imported", "operational");
-      return send(200, { saved: true, observationsQueued: queued });
+      return send(
+        200,
+        { saved: true, observationsQueued: queued, revision: saved.revision },
+        { "x-dataset-revision": String(saved.revision) }
+      );
     }
     if (req.method === "GET" && req.url === "/ecosystem/status") {
       const status = await fetchHubStatus();

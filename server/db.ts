@@ -25,6 +25,15 @@ export interface OutboxRow {
   attempts: number;
 }
 
+export interface DatasetSnapshot {
+  payloadJson: string;
+  revision: number;
+}
+
+export type SaveDatasetResult =
+  | { saved: true; revision: number }
+  | { saved: false; revision: number; payloadJson?: string };
+
 export class OlyStateDatabase {
   private db: DatabaseSync;
 
@@ -44,6 +53,7 @@ export class OlyStateDatabase {
       CREATE TABLE IF NOT EXISTS dataset_snapshots (
         id TEXT PRIMARY KEY,
         payload_json TEXT NOT NULL,
+        revision INTEGER NOT NULL DEFAULT 1,
         created_at TEXT NOT NULL
       );
 
@@ -70,27 +80,51 @@ export class OlyStateDatabase {
       CREATE INDEX IF NOT EXISTS idx_olystate_outbox_pending
         ON ecosystem_outbox (status, created_at);
     `);
+    const datasetColumns = this.db.prepare("PRAGMA table_info(dataset_snapshots)").all();
+    if (!datasetColumns.some((column) => asString(column.name) === "revision")) {
+      this.db.exec("ALTER TABLE dataset_snapshots ADD COLUMN revision INTEGER NOT NULL DEFAULT 1");
+    }
   }
 
   /** Latest saved dataset, or undefined before first save. */
-  loadDataset(): string | undefined {
+  loadDataset(): DatasetSnapshot | undefined {
     const row = this.db
-      .prepare("SELECT payload_json FROM dataset_snapshots ORDER BY created_at DESC, id DESC LIMIT 1")
+      .prepare("SELECT payload_json, revision FROM dataset_snapshots ORDER BY revision DESC, created_at DESC, id DESC LIMIT 1")
       .get();
-    return row ? asString(row.payload_json) : undefined;
+    return row
+      ? { payloadJson: asString(row.payload_json), revision: Number(row.revision) }
+      : undefined;
   }
 
-  /** Persists a dataset snapshot (latest-wins reads; history retained). */
-  saveDataset(payloadJson: string): void {
-    this.db
-      .prepare("INSERT INTO dataset_snapshots (id, payload_json, created_at) VALUES (?, ?, ?)")
-      .run(randomUUID(), payloadJson, nowIso());
-    // Retain a bounded history: keep the newest 20 snapshots.
-    this.db.exec(`
-      DELETE FROM dataset_snapshots WHERE id NOT IN (
-        SELECT id FROM dataset_snapshots ORDER BY created_at DESC, id DESC LIMIT 20
-      );
-    `);
+  /** Persists only when the caller still holds the latest revision. */
+  saveDataset(payloadJson: string, expectedRevision: number): SaveDatasetResult {
+    this.db.exec("BEGIN IMMEDIATE");
+    try {
+      const current = this.loadDataset();
+      const revision = current?.revision ?? 0;
+      if (expectedRevision !== revision) {
+        this.db.exec("ROLLBACK");
+        return {
+          saved: false,
+          revision,
+          payloadJson: current?.payloadJson,
+        };
+      }
+      const nextRevision = revision + 1;
+      this.db
+        .prepare("INSERT INTO dataset_snapshots (id, payload_json, revision, created_at) VALUES (?, ?, ?, ?)")
+        .run(randomUUID(), payloadJson, nextRevision, nowIso());
+      this.db.exec(`
+        DELETE FROM dataset_snapshots WHERE id NOT IN (
+          SELECT id FROM dataset_snapshots ORDER BY revision DESC, created_at DESC, id DESC LIMIT 20
+        );
+      `);
+      this.db.exec("COMMIT");
+      return { saved: true, revision: nextRevision };
+    } catch (error) {
+      this.db.exec("ROLLBACK");
+      throw error;
+    }
   }
 
   linkFor(athleteId: string): string | undefined {

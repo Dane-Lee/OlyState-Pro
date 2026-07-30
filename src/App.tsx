@@ -206,6 +206,7 @@ function App() {
   const ecosystem = useEcosystemControlCenter();
   useControlCenterHotkey(() => setControlCenterOpen((open) => !open));
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const skipNextApiPersist = useRef(false);
   const isDarkMode = theme === "dark";
 
   const activeAthlete = dataSet.athletes.find((athlete) => athlete.id === activeAthleteId) ?? dataSet.athletes[0];
@@ -228,7 +229,21 @@ function App() {
 
   useEffect(() => {
     saveDataSet(dataSet);
-    persistDataSetToApi(dataSet);
+    if (skipNextApiPersist.current) {
+      skipNextApiPersist.current = false;
+      return;
+    }
+    void persistDataSetToApi(dataSet).then((current) => {
+      if (current) {
+        skipNextApiPersist.current = true;
+        setDataSet(current);
+        setActiveAthleteId((active) =>
+          current.athletes.some((athlete) => athlete.id === active)
+            ? active
+            : (current.athletes[0]?.id ?? "")
+        );
+      }
+    });
   }, [dataSet]);
 
   // Hydrate from the durable local API when configured (fail-silent; the
@@ -236,6 +251,7 @@ function App() {
   useEffect(() => {
     void loadDataSetFromApi().then((persisted) => {
       if (persisted) {
+        skipNextApiPersist.current = true;
         setDataSet(persisted);
         setActiveAthleteId((current) => current || (persisted.athletes[0]?.id ?? ""));
       }

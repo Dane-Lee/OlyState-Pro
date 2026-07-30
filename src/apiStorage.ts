@@ -15,6 +15,7 @@ import type {
 
 const importMetaEnv = (import.meta as { env?: Record<string, string | undefined> }).env;
 const API_URL = importMetaEnv?.VITE_OLYSTATE_API_URL?.replace(/\/$/, "");
+let currentDatasetRevision = 0;
 
 export function isApiPersistenceConfigured(): boolean {
   return Boolean(API_URL);
@@ -73,6 +74,7 @@ export async function loadDataSetFromApi(): Promise<OlyStateDataSet | undefined>
   try {
     const response = await fetch(`${API_URL}/dataset`);
     if (!response.ok) return undefined;
+    currentDatasetRevision = Number(response.headers.get("x-dataset-revision") ?? 0);
     const parsed = (await response.json()) as OlyStateDataSet;
     if (!Array.isArray(parsed.athletes) || !Array.isArray(parsed.sessions)) return undefined;
     return {
@@ -86,11 +88,29 @@ export async function loadDataSetFromApi(): Promise<OlyStateDataSet | undefined>
   }
 }
 
-export function persistDataSetToApi(dataSet: OlyStateDataSet): void {
-  if (!API_URL) return;
-  void fetch(`${API_URL}/dataset`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(dataSet)
-  }).catch(() => undefined);
+export async function persistDataSetToApi(
+  dataSet: OlyStateDataSet
+): Promise<OlyStateDataSet | undefined> {
+  if (!API_URL) return undefined;
+  try {
+    const response = await fetch(`${API_URL}/dataset`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "If-Match": String(currentDatasetRevision),
+      },
+      body: JSON.stringify(dataSet)
+    });
+    const body = await response.json().catch(() => ({})) as {
+      revision?: number;
+      current?: OlyStateDataSet;
+    };
+    const responseRevision = Number(
+      response.headers.get("x-dataset-revision") ?? body.revision ?? currentDatasetRevision
+    );
+    if (Number.isFinite(responseRevision)) currentDatasetRevision = responseRevision;
+    return response.status === 409 ? body.current : undefined;
+  } catch {
+    return undefined;
+  }
 }

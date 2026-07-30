@@ -29,6 +29,10 @@ npm run server:dev
 npm run dev
 ```
 
+The API uses optimistic dataset revisions. Every PUT includes the revision
+loaded by that browser; a stale write receives `409` and the client rehydrates
+the current server snapshot instead of silently overwriting another device.
+
 `VITE_OLYSTATE_API_URL` is only the local API URL. Keep
 `ATHLETEOS_SERVICE_KEY` server-side and never rename it with a `VITE_` prefix.
 Control Center writes are accepted from loopback origins by default. If the web
