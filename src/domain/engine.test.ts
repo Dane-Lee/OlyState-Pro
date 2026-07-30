@@ -17,6 +17,14 @@ import type { AthleteProfile, WeightliftingSession } from "./types";
 
 const athlete = initialDataSet.athletes[0];
 
+describe("model evidence", () => {
+  it("stamps readiness with research-provisional evidence maturity", () => {
+    const snapshot = evaluateAthlete(athlete, []);
+    assert.equal(snapshot.evidenceMaturity, "research-provisional");
+    assert.match(snapshot.modelVersion, /research-provisional/);
+  });
+});
+
 function cloneAthlete(patch: Partial<AthleteProfile> = {}): AthleteProfile {
   return {
     ...athlete,

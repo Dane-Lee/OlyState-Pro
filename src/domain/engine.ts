@@ -1,6 +1,8 @@
 import {
   COUPLING_WEIGHTS,
   EXERCISE_PROFILES,
+  OLYSTATE_EVIDENCE_MATURITY,
+  OLYSTATE_MODEL_VERSION,
   PAIN_REGION_SYSTEM_MAP,
   SYSTEM_CONSTANTS,
   ZERO_VECTOR
@@ -800,6 +802,8 @@ export function evaluateAthlete(
   return {
     athleteId: athlete.id,
     generatedAt,
+    modelVersion: OLYSTATE_MODEL_VERSION,
+    evidenceMaturity: OLYSTATE_EVIDENCE_MATURITY,
     systemState: {
       neural: round(state.neural, 2),
       muscular: round(state.muscular, 2),

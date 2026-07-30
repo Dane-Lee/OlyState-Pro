@@ -456,6 +456,9 @@ function ReadinessHeader({ athlete, snapshot }: { athlete: AthleteProfile; snaps
           {formatBodyweightClass(athlete.bodyweightKg, athlete.sex, new Date().toISOString())} · PB{" "}
           {athlete.personalBests.snatch}/{athlete.personalBests.cleanJerk}
         </p>
+        <p className="subtle">
+          Research-provisional decision support · {snapshot.modelVersion}
+        </p>
       </div>
       <div className={`readiness-score ${snapshot.readinessBand}`}>
         <span>{snapshot.globalReadiness}</span>

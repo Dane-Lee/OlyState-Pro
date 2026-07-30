@@ -194,6 +194,8 @@ export interface AttemptConfidence {
 export interface ReadinessSnapshot {
   athleteId: string;
   generatedAt: string;
+  modelVersion: string;
+  evidenceMaturity: "research-provisional" | "externally-validated";
   systemState: SystemVector;
   systemReadiness: SystemVector;
   globalReadiness: number;

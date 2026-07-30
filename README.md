@@ -2,6 +2,12 @@
 
 OlyState Pro is a coach-facing Olympic weightlifting readiness dashboard. The first version is manual-first, but the data model is built around normalized observations so bar velocity, force plates, video, IMUs, HR straps, wearables, scales, and recovery devices can be added later without replacing the calculation engine.
 
+The current model is research-provisional coaching decision support. Its
+numeric readiness and attempt-confidence values are deterministic heuristic
+outputs, not externally validated probabilities, injury predictions, or
+medical advice. Every readiness snapshot carries a model version and evidence
+maturity stamp.
+
 ## Run
 
 ```bash

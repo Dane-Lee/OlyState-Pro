@@ -6,6 +6,11 @@ OlyState Pro translates the Swim State Pro readiness concept into Olympic weight
 
 The system is coaching decision support. It should adjust, constrain, and explain a planned training day; it should not diagnose injuries or replace a coach.
 
+Evidence maturity is currently `research-provisional`. A passing software test
+proves deterministic implementation of these rules; it does not validate the
+rules against an external athlete cohort. Attempt-confidence scores are
+heuristic indices, not calibrated probabilities of making a lift.
+
 ## State Convention
 
 The hidden state variable is `systemState`, not raw fatigue.

@@ -1,5 +1,8 @@
 import type { BodyRegion, ExerciseCategory, SystemId, SystemVector } from "./types";
 
+export const OLYSTATE_MODEL_VERSION = "olystate-model/0.2.0-research-provisional";
+export const OLYSTATE_EVIDENCE_MATURITY = "research-provisional" as const;
+
 export const ZERO_VECTOR: SystemVector = {
   neural: 0,
   muscular: 0,
