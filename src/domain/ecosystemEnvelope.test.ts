@@ -20,11 +20,12 @@ const observation = (over: Partial<Observation> = {}): Observation => ({
   ...over,
 });
 
-const dataSet = (): Pick<OlyStateDataSet, "sessions" | "plannedSessions"> =>
+const dataSet = (): Pick<OlyStateDataSet, "athletes" | "sessions" | "plannedSessions"> =>
   ({
+    athletes: [{ id: "ath-9" }],
     sessions: [{ id: "sess-1", athleteId: "ath-9" }],
     plannedSessions: [{ id: "plan-1", athleteId: "ath-9" }],
-  }) as unknown as Pick<OlyStateDataSet, "sessions" | "plannedSessions">;
+  }) as unknown as Pick<OlyStateDataSet, "athletes" | "sessions" | "plannedSessions">;
 
 describe("buildObservationDraft", () => {
   it("maps the observation near-1:1 with sport=lift and metric-keyed values", () => {
@@ -52,6 +53,23 @@ describe("buildObservationDraft", () => {
 });
 
 describe("resolveObservationAthleteId", () => {
+  it("prefers a valid direct athleteId for session-less observations", () => {
+    assert.equal(
+      resolveObservationAthleteId(
+        observation({ athleteId: "ath-9", sessionId: undefined }),
+        dataSet()
+      ),
+      "ath-9"
+    );
+    assert.equal(
+      resolveObservationAthleteId(
+        observation({ athleteId: "missing", sessionId: undefined }),
+        dataSet()
+      ),
+      undefined
+    );
+  });
+
   it("resolves through actual sessions and planned sessions", () => {
     assert.equal(resolveObservationAthleteId(observation(), dataSet()), "ath-9");
     assert.equal(
@@ -69,15 +87,20 @@ describe("resolveObservationAthleteId", () => {
 describe("collectPublishableObservations", () => {
   it("keeps athlete-resolvable observations and skips orphans", () => {
     const set = {
-      athletes: [],
+      athletes: [{ id: "ath-9" }],
       sessions: [{ id: "sess-1", athleteId: "ath-9" }],
       plannedSessions: [],
-      observations: [observation(), observation({ id: "obs-2", sessionId: undefined })],
+      observations: [
+        observation(),
+        observation({ id: "obs-2", athleteId: "ath-9", sessionId: undefined }),
+        observation({ id: "obs-3", sessionId: undefined }),
+      ],
     } as unknown as OlyStateDataSet;
 
     const publishable = collectPublishableObservations(set);
-    assert.equal(publishable.length, 1);
+    assert.equal(publishable.length, 2);
     assert.equal(publishable[0].athleteId, "ath-9");
     assert.equal(publishable[0].draft.observationId, "obs-1");
+    assert.equal(publishable[1].draft.observationId, "obs-2");
   });
 });

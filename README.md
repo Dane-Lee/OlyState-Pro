@@ -8,6 +8,10 @@ outputs, not externally validated probabilities, injury predictions, or
 medical advice. Every readiness snapshot carries a model version and evidence
 maturity stamp.
 
+Normalized observations may identify their athlete directly or inherit the
+athlete through a linked session. This keeps morning bodyweight, HRV, pain, and
+other session-less measurements publishable without inventing a session.
+
 ## Run
 
 ```bash

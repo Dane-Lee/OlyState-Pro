@@ -3,10 +3,9 @@
  * osp-observation-envelopes).
  *
  * OlyState's normalized observation model was the template for the contract
- * payload, so the mapping is near-1:1. The athlete is resolved through the
- * observation's session (observations carry sessionId, sessions carry
- * athleteId); observations without a resolvable athlete are not publishable
- * and are skipped by the caller.
+ * payload, so the mapping is near-1:1. Athlete-level observations carry a
+ * direct athleteId; session observations may resolve through sessionId.
+ * Orphans are not publishable and are skipped by the caller.
  */
 import { SportContext } from "../ecosystem-contracts/enums";
 import type { ObservationUpsertPayload } from "../ecosystem-contracts/payloads/observation";
@@ -39,13 +38,18 @@ export function buildObservationDraft(observation: Observation): ObservationDraf
 }
 
 /**
- * Resolves the local athlete for an observation via its session. Returns
- * undefined when the observation has no session linkage (not publishable).
+ * Prefers a valid direct athleteId, then falls back to session linkage.
  */
 export function resolveObservationAthleteId(
   observation: Observation,
-  dataSet: Pick<OlyStateDataSet, "sessions" | "plannedSessions">
+  dataSet: Pick<OlyStateDataSet, "athletes" | "sessions" | "plannedSessions">
 ): string | undefined {
+  if (
+    observation.athleteId &&
+    dataSet.athletes.some((athlete) => athlete.id === observation.athleteId)
+  ) {
+    return observation.athleteId;
+  }
   if (!observation.sessionId) return undefined;
   const session =
     dataSet.sessions.find((candidate) => candidate.id === observation.sessionId) ??

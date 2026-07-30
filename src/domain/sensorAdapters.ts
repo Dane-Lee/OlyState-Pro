@@ -8,6 +8,7 @@ export interface SensorAdapter<TInput = unknown> {
 }
 
 export interface ManualObservationInput {
+  athleteId?: string;
   timestamp: string;
   metric: string;
   value: number | string | boolean;
@@ -28,6 +29,7 @@ export function makeId(prefix: string): string {
 export function createManualObservation(input: ManualObservationInput): Observation {
   return {
     id: makeId("obs"),
+    athleteId: input.athleteId,
     timestamp: input.timestamp,
     source: "manual",
     sourceType: "manual",

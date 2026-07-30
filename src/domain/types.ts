@@ -43,6 +43,7 @@ export type SessionMode = "planned" | "actual";
 
 export interface Observation {
   id: string;
+  athleteId?: string;
   timestamp: string;
   source: string;
   sourceType: SourceType;
