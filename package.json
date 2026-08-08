@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "server:dev": "node --env-file-if-exists=.env --experimental-strip-types server/index.ts",
+    "server:dev": "tsx --env-file-if-exists=.env server/index.ts",
     "build": "tsc -b && vite build",
     "preview": "node scripts/serve-dist.mjs dist",
     "typecheck:server": "tsc -p tsconfig.server.json --noEmit",
@@ -18,11 +18,12 @@
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@types/node": "^22.10.2",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^6.0.2",
-    "@playwright/test": "^1.60.0",
+    "tsx": "^4.23.1",
     "typescript": "^5.6.3",
     "vite": "^8.0.14"
   }

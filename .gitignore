@@ -4,3 +4,18 @@ output/
 .test-build/
 *.tsbuildinfo
 .vite-dev*.log
+
+# Local athlete data — never publish
+data/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# Credentials
+.env
+.env.*
+!.env.example
+
+# Windows / OneDrive
+desktop.ini
+Thumbs.db

@@ -29,6 +29,9 @@ npm run server:dev
 npm run dev
 ```
 
+The API uses `tsx` rather than Node's type-stripping mode because the shared
+domain intentionally contains runtime TypeScript enums.
+
 The API uses optimistic dataset revisions. Every PUT includes the revision
 loaded by that browser; a stale write receives `409` and the client rehydrates
 the current server snapshot instead of silently overwriting another device.

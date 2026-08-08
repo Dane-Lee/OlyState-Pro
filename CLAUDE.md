@@ -1,6 +1,6 @@
 # OlyState Pro — Program CLAUDE.md
 *Ecosystem role: Tier 2 — Sport-Specific (Olympic Weightlifting Readiness)*
-*Master Mind: `C:\Users\dlee5\OneDrive\Desktop\MasterMind\CLAUDE.md`*
+*Master Mind: `C:\Users\dlee5\OneDrive\Desktop\Personal Coding Projects\Athlete Ecosystem\MasterMind\CLAUDE.md`*
 
 ---
 
