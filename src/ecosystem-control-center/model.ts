@@ -57,6 +57,12 @@ export const APP_META: Readonly<
     role: 'Observability',
     orbit: 6,
   },
+  recoveryAI: {
+    label: 'Recovery AI',
+    shortLabel: 'RAI',
+    role: 'Recovery prescriptions',
+    orbit: 7,
+  },
 };
 
 export const APP_ORDER = Object.keys(APP_META) as SourceAppId[];

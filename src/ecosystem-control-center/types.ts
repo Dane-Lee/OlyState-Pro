@@ -6,7 +6,8 @@ export type SourceAppId =
   | 'formLab'
   | 'triathletePro'
   | 'olyStatePro'
-  | 'sentiOS';
+  | 'sentiOS'
+  | 'recoveryAI';
 
 export type FlowStatus = 'flowing' | 'stale' | 'silent';
 export type ConnectionState = 'on' | 'pause' | 'off';

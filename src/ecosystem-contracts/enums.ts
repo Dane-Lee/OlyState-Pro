@@ -10,6 +10,11 @@
  * extended from the original two values to the full ecosystem, and three
  * payload types are added: BiomechReportUpsert, MovementRedFlagUpsert,
  * ObservationUpsert.
+ *
+ * 2026-08-12 (RAI_DECISIONS.md, RECOVERY_AI_BUILD_PLAN.md Increment 1):
+ * SourceApp gains RecoveryAI; SyncPayloadType gains RecoveryPlanUpsert and
+ * RecoveryActionUpsert; ModalityTier, ScreeningSource and RecoveryPlanStatus
+ * are added to support them. See src/payloads/recovery.ts.
  */
 
 export enum SourceApp {
@@ -20,6 +25,7 @@ export enum SourceApp {
   TriathletePro = 'triathletePro',
   OlyStatePro = 'olyStatePro',
   SentiOS = 'sentiOS',
+  RecoveryAI = 'recoveryAI',
 }
 
 export enum InternalSystem {
@@ -121,6 +127,47 @@ export enum SyncPayloadType {
   BiomechReportUpsert = 'biomechReportUpsert',
   MovementRedFlagUpsert = 'movementRedFlagUpsert',
   ObservationUpsert = 'observationUpsert',
+  RecoveryPlanUpsert = 'recoveryPlanUpsert',
+  RecoveryActionUpsert = 'recoveryActionUpsert',
+}
+
+/**
+ * Modality administration-risk tier (RAI_DECISIONS.md D1, ratified
+ * 2026-08-12). Tier C items are advisory-only: a plan may name them with
+ * rationale but must never carry a numeric dose for them — enforced at the
+ * type level in RecoveryPlanUpsertPayload.
+ */
+export enum ModalityTier {
+  /** Self-administered, low risk (sleep, naps, mobility, hydration, ...). */
+  A = 'A',
+  /** Equipment/supervision (massage, sauna, CWI, percussive, PBM, ...). */
+  B = 'B',
+  /** Clinically adjacent (WBC, BFR, EMS/NMES, PEMF, hypoxic). Advisory only. */
+  C = 'C',
+}
+
+/**
+ * Who performed the contraindication screen backing a plan (RAI_DECISIONS.md
+ * D2): all three are accepted as sources, provenance is always recorded, and
+ * Tier B prescriptions require coach-or-above.
+ */
+export enum ScreeningSource {
+  Athlete = 'athlete',
+  Coach = 'coach',
+  Practitioner = 'practitioner',
+}
+
+export enum RecoveryPlanStatus {
+  Active = 'active',
+  Superseded = 'superseded',
+  /** Emitted when safety inputs are missing — plan carries no items (fail-closed). */
+  ScreeningIncomplete = 'screeningIncomplete',
+}
+
+export enum AdherenceLevel {
+  Skipped = 'skipped',
+  Partial = 'partial',
+  Full = 'full',
 }
 
 /** Sport context for multi-sport payloads (FormLab and OlyState cover lifting). */

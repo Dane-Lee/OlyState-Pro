@@ -13,3 +13,4 @@ export * from './payloads/derived';
 export * from './payloads/readiness';
 export * from './payloads/biomech';
 export * from './payloads/observation';
+export * from './payloads/recovery';

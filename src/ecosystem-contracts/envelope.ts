@@ -25,6 +25,10 @@ import type {
   MovementRedFlagUpsertPayload,
 } from './payloads/biomech';
 import type { ObservationUpsertPayload } from './payloads/observation';
+import type {
+  RecoveryActionUpsertPayload,
+  RecoveryPlanUpsertPayload,
+} from './payloads/recovery';
 
 /** Version of the envelope format itself (not of payload schemas). */
 export const SYNC_SCHEMA_VERSION = '1.0.0';
@@ -39,6 +43,8 @@ export interface SyncPayloadMap {
   [SyncPayloadType.BiomechReportUpsert]: BiomechReportUpsertPayload;
   [SyncPayloadType.MovementRedFlagUpsert]: MovementRedFlagUpsertPayload;
   [SyncPayloadType.ObservationUpsert]: ObservationUpsertPayload;
+  [SyncPayloadType.RecoveryPlanUpsert]: RecoveryPlanUpsertPayload;
+  [SyncPayloadType.RecoveryActionUpsert]: RecoveryActionUpsertPayload;
 }
 
 export type SyncPayload = SyncPayloadMap[SyncPayloadType];

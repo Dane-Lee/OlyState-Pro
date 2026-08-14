@@ -100,6 +100,22 @@ export const FLOW_SPECS: readonly FlowSpec[] = [
     trigger: 'Normalized observation recorded (manual or sensor/video derived)',
     flowOrder: 8,
   },
+  {
+    payloadType: SyncPayloadType.RecoveryPlanUpsert,
+    producers: [SourceApp.RecoveryAI],
+    consumers: [SourceApp.AthleteOS],
+    cadence: 'daily',
+    trigger: 'RecoveryAI generates or revises a recovery plan (RAI_DECISIONS.md A2/D1)',
+    flowOrder: 9,
+  },
+  {
+    payloadType: SyncPayloadType.RecoveryActionUpsert,
+    producers: [SourceApp.RecoveryAI],
+    consumers: [SourceApp.AthleteOS, SourceApp.SwimStatePro],
+    cadence: 'per action',
+    trigger: 'Athlete logs a completed recovery modality in RecoveryAI (RAI_DECISIONS.md D3/D7)',
+    flowOrder: 10,
+  },
 ];
 
 export function flowsProducedBy(app: SourceApp): readonly FlowSpec[] {

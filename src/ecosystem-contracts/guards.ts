@@ -30,6 +30,8 @@ export const REQUIRED_PAYLOAD_FIELDS: Readonly<Record<SyncPayloadType, readonly 
   [SyncPayloadType.BiomechReportUpsert]: ['sharedAthleteId', 'reportId', 'capturedAt', 'sport', 'movementElement', 'analysisMethod', 'metrics'],
   [SyncPayloadType.MovementRedFlagUpsert]: ['sharedAthleteId', 'redFlagId', 'observedAt', 'sport', 'dysfunctionCode', 'severity', 'recoveryCostEstimate'],
   [SyncPayloadType.ObservationUpsert]: ['sharedAthleteId', 'observationId', 'observedAt', 'sport', 'sourceType', 'observationKind', 'values'],
+  [SyncPayloadType.RecoveryPlanUpsert]: ['sharedAthleteId', 'planId', 'planRevision', 'planDate', 'timeZone', 'status', 'prescribedItems', 'advisoryItems', 'engineVersion'],
+  [SyncPayloadType.RecoveryActionUpsert]: ['sharedAthleteId', 'actionId', 'modalityCode', 'tier', 'performedAt', 'durationMinutes', 'adherence'],
 };
 
 export interface EnvelopeValidationResult {
